@@ -14,13 +14,16 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
-            overflow: hidden;
-            padding: 8px;
+            min-height: 100vh;
+            padding: max(8px, 2vw);
+            margin: 0;
+            box-sizing: border-box;
         }
 
         .container {
-            height: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            height: calc(100vh - max(16px, 4vw));
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             border-radius: 12px;
@@ -29,6 +32,7 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
+            gap: max(8px, 1.5vw);
         }
 
         .header {
@@ -38,22 +42,22 @@
         }
 
         .header h1 {
-            font-size: 1.8rem;
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
             font-weight: 700;
-            margin-bottom: 5px;
+            margin-bottom: max(4px, 0.8vw);
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .header p {
-            font-size: 0.85rem;
+            font-size: clamp(0.7rem, 1.5vw, 0.85rem);
             opacity: 0.9;
             font-weight: 300;
         }
 
         .schedule-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+            gap: max(8px, 1.5vw);
             flex: 1;
             overflow: hidden;
         }
@@ -61,13 +65,14 @@
         .day-card {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 8px;
-            padding: 8px;
+            padding: max(8px, 1.5vw);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
             border: 1px solid rgba(255, 255, 255, 0.3);
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            min-height: clamp(150px, 30vh, 300px);
         }
 
         .day-card:hover {
@@ -702,77 +707,36 @@
     /* Mobile specific styles */
     @media (max-width: 768px) {
         body {
-            padding: 4px;
+            padding: max(4px, 1vw);
         }
-        
+
         .container {
-            padding: 6px;
+            height: calc(100vh - max(8px, 2vw));
         }
-        
-        .header h1 {
-            font-size: 1.2rem;
-        }
-        
-        .header p {
-            font-size: 0.6rem;
-        }
-        
-        .schedule-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 4px;
-        }
-        
-        .day-header {
-            font-size: 0.7rem;
-        }
-        
-        .class-name {
-            font-size: 0.55rem;
-        }
-        
-        .class-time {
-            font-size: 0.45rem;
-        }
-        
-        .class-type {
-            font-size: 0.4rem;
-            padding: 1px 2px;
-        }
-        
-        .stats {
-            gap: 6px;
-        }
-        
-        .stat-card {
-            padding: 3px 6px;
-            min-width: 35px;
-        }
-        
-        .stat-number {
-            font-size: 0.8rem;
-        }
-        
-        .stat-label {
-            font-size: 0.45rem;
+
+        .class-item.cancelled::after {
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
         }
     }
 
     /* Extra small screens */
     @media (max-width: 480px) {
-        .schedule-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .header h1 {
-            font-size: 1rem;
-        }
-        
         .day-card {
-            padding: 4px;
+            min-height: clamp(120px, 25vh, 200px);
         }
-        
-        .class-item {
-            padding: 3px 4px;
+
+        .stats {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (orientation: landscape) and (max-height: 500px) {
+        .schedule-grid {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+        }
+
+        .day-card {
+            min-height: clamp(100px, 40vh, 150px);
         }
     }
 </style>
@@ -971,77 +935,36 @@
     /* Mobile specific styles */
     @media (max-width: 768px) {
         body {
-            padding: 4px;
+            padding: max(4px, 1vw);
         }
-        
+
         .container {
-            padding: 6px;
+            height: calc(100vh - max(8px, 2vw));
         }
-        
-        .header h1 {
-            font-size: 1.2rem;
-        }
-        
-        .header p {
-            font-size: 0.6rem;
-        }
-        
-        .schedule-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 4px;
-        }
-        
-        .day-header {
-            font-size: 0.7rem;
-        }
-        
-        .class-name {
-            font-size: 0.55rem;
-        }
-        
-        .class-time {
-            font-size: 0.45rem;
-        }
-        
-        .class-type {
-            font-size: 0.4rem;
-            padding: 1px 2px;
-        }
-        
-        .stats {
-            gap: 6px;
-        }
-        
-        .stat-card {
-            padding: 3px 6px;
-            min-width: 35px;
-        }
-        
-        .stat-number {
-            font-size: 0.8rem;
-        }
-        
-        .stat-label {
-            font-size: 0.45rem;
+
+        .class-item.cancelled::after {
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
         }
     }
 
     /* Extra small screens */
     @media (max-width: 480px) {
-        .schedule-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .header h1 {
-            font-size: 1rem;
-        }
-        
         .day-card {
-            padding: 4px;
+            min-height: clamp(120px, 25vh, 200px);
         }
-        
-        .class-item {
-            padding: 3px 4px;
+
+        .stats {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (orientation: landscape) and (max-height: 500px) {
+        .schedule-grid {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+        }
+
+        .day-card {
+            min-height: clamp(100px, 40vh, 150px);
         }
     }
 </style>
@@ -1240,77 +1163,36 @@
     /* Mobile specific styles */
     @media (max-width: 768px) {
         body {
-            padding: 4px;
+            padding: max(4px, 1vw);
         }
-        
+
         .container {
-            padding: 6px;
+            height: calc(100vh - max(8px, 2vw));
         }
-        
-        .header h1 {
-            font-size: 1.2rem;
-        }
-        
-        .header p {
-            font-size: 0.6rem;
-        }
-        
-        .schedule-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 4px;
-        }
-        
-        .day-header {
-            font-size: 0.7rem;
-        }
-        
-        .class-name {
-            font-size: 0.55rem;
-        }
-        
-        .class-time {
-            font-size: 0.45rem;
-        }
-        
-        .class-type {
-            font-size: 0.4rem;
-            padding: 1px 2px;
-        }
-        
-        .stats {
-            gap: 6px;
-        }
-        
-        .stat-card {
-            padding: 3px 6px;
-            min-width: 35px;
-        }
-        
-        .stat-number {
-            font-size: 0.8rem;
-        }
-        
-        .stat-label {
-            font-size: 0.45rem;
+
+        .class-item.cancelled::after {
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
         }
     }
 
     /* Extra small screens */
     @media (max-width: 480px) {
-        .schedule-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .header h1 {
-            font-size: 1rem;
-        }
-        
         .day-card {
-            padding: 4px;
+            min-height: clamp(120px, 25vh, 200px);
         }
-        
-        .class-item {
-            padding: 3px 4px;
+
+        .stats {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (orientation: landscape) and (max-height: 500px) {
+        .schedule-grid {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+        }
+
+        .day-card {
+            min-height: clamp(100px, 40vh, 150px);
         }
     }
 </style>
@@ -1509,77 +1391,36 @@
     /* Mobile specific styles */
     @media (max-width: 768px) {
         body {
-            padding: 4px;
+            padding: max(4px, 1vw);
         }
-        
+
         .container {
-            padding: 6px;
+            height: calc(100vh - max(8px, 2vw));
         }
-        
-        .header h1 {
-            font-size: 1.2rem;
-        }
-        
-        .header p {
-            font-size: 0.6rem;
-        }
-        
-        .schedule-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 4px;
-        }
-        
-        .day-header {
-            font-size: 0.7rem;
-        }
-        
-        .class-name {
-            font-size: 0.55rem;
-        }
-        
-        .class-time {
-            font-size: 0.45rem;
-        }
-        
-        .class-type {
-            font-size: 0.4rem;
-            padding: 1px 2px;
-        }
-        
-        .stats {
-            gap: 6px;
-        }
-        
-        .stat-card {
-            padding: 3px 6px;
-            min-width: 35px;
-        }
-        
-        .stat-number {
-            font-size: 0.8rem;
-        }
-        
-        .stat-label {
-            font-size: 0.45rem;
+
+        .class-item.cancelled::after {
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
         }
     }
 
     /* Extra small screens */
     @media (max-width: 480px) {
-        .schedule-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .header h1 {
-            font-size: 1rem;
-        }
-        
         .day-card {
-            padding: 4px;
+            min-height: clamp(120px, 25vh, 200px);
         }
-        
-        .class-item {
-            padding: 3px 4px;
+
+        .stats {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (orientation: landscape) and (max-height: 500px) {
+        .schedule-grid {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+        }
+
+        .day-card {
+            min-height: clamp(100px, 40vh, 150px);
         }
     }
 </style>
@@ -1778,77 +1619,36 @@
     /* Mobile specific styles */
     @media (max-width: 768px) {
         body {
-            padding: 4px;
+            padding: max(4px, 1vw);
         }
-        
+
         .container {
-            padding: 6px;
+            height: calc(100vh - max(8px, 2vw));
         }
-        
-        .header h1 {
-            font-size: 1.2rem;
-        }
-        
-        .header p {
-            font-size: 0.6rem;
-        }
-        
-        .schedule-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 4px;
-        }
-        
-        .day-header {
-            font-size: 0.7rem;
-        }
-        
-        .class-name {
-            font-size: 0.55rem;
-        }
-        
-        .class-time {
-            font-size: 0.45rem;
-        }
-        
-        .class-type {
-            font-size: 0.4rem;
-            padding: 1px 2px;
-        }
-        
-        .stats {
-            gap: 6px;
-        }
-        
-        .stat-card {
-            padding: 3px 6px;
-            min-width: 35px;
-        }
-        
-        .stat-number {
-            font-size: 0.8rem;
-        }
-        
-        .stat-label {
-            font-size: 0.45rem;
+
+        .class-item.cancelled::after {
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
         }
     }
 
     /* Extra small screens */
     @media (max-width: 480px) {
-        .schedule-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .header h1 {
-            font-size: 1rem;
-        }
-        
         .day-card {
-            padding: 4px;
+            min-height: clamp(120px, 25vh, 200px);
         }
-        
-        .class-item {
-            padding: 3px 4px;
+
+        .stats {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (orientation: landscape) and (max-height: 500px) {
+        .schedule-grid {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+        }
+
+        .day-card {
+            min-height: clamp(100px, 40vh, 150px);
         }
     }
 </style>
@@ -2047,77 +1847,36 @@
     /* Mobile specific styles */
     @media (max-width: 768px) {
         body {
-            padding: 4px;
+            padding: max(4px, 1vw);
         }
-        
+
         .container {
-            padding: 6px;
+            height: calc(100vh - max(8px, 2vw));
         }
-        
-        .header h1 {
-            font-size: 1.2rem;
-        }
-        
-        .header p {
-            font-size: 0.6rem;
-        }
-        
-        .schedule-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 4px;
-        }
-        
-        .day-header {
-            font-size: 0.7rem;
-        }
-        
-        .class-name {
-            font-size: 0.55rem;
-        }
-        
-        .class-time {
-            font-size: 0.45rem;
-        }
-        
-        .class-type {
-            font-size: 0.4rem;
-            padding: 1px 2px;
-        }
-        
-        .stats {
-            gap: 6px;
-        }
-        
-        .stat-card {
-            padding: 3px 6px;
-            min-width: 35px;
-        }
-        
-        .stat-number {
-            font-size: 0.8rem;
-        }
-        
-        .stat-label {
-            font-size: 0.45rem;
+
+        .class-item.cancelled::after {
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
         }
     }
 
     /* Extra small screens */
     @media (max-width: 480px) {
-        .schedule-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .header h1 {
-            font-size: 1rem;
-        }
-        
         .day-card {
-            padding: 4px;
+            min-height: clamp(120px, 25vh, 200px);
         }
-        
-        .class-item {
-            padding: 3px 4px;
+
+        .stats {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (orientation: landscape) and (max-height: 500px) {
+        .schedule-grid {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+        }
+
+        .day-card {
+            min-height: clamp(100px, 40vh, 150px);
         }
     }
 </style>
@@ -2316,77 +2075,36 @@
     /* Mobile specific styles */
     @media (max-width: 768px) {
         body {
-            padding: 4px;
+            padding: max(4px, 1vw);
         }
-        
+
         .container {
-            padding: 6px;
+            height: calc(100vh - max(8px, 2vw));
         }
-        
-        .header h1 {
-            font-size: 1.2rem;
-        }
-        
-        .header p {
-            font-size: 0.6rem;
-        }
-        
-        .schedule-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 4px;
-        }
-        
-        .day-header {
-            font-size: 0.7rem;
-        }
-        
-        .class-name {
-            font-size: 0.55rem;
-        }
-        
-        .class-time {
-            font-size: 0.45rem;
-        }
-        
-        .class-type {
-            font-size: 0.4rem;
-            padding: 1px 2px;
-        }
-        
-        .stats {
-            gap: 6px;
-        }
-        
-        .stat-card {
-            padding: 3px 6px;
-            min-width: 35px;
-        }
-        
-        .stat-number {
-            font-size: 0.8rem;
-        }
-        
-        .stat-label {
-            font-size: 0.45rem;
+
+        .class-item.cancelled::after {
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
         }
     }
 
     /* Extra small screens */
     @media (max-width: 480px) {
-        .schedule-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .header h1 {
-            font-size: 1rem;
-        }
-        
         .day-card {
-            padding: 4px;
+            min-height: clamp(120px, 25vh, 200px);
         }
-        
-        .class-item {
-            padding: 3px 4px;
+
+        .stats {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (orientation: landscape) and (max-height: 500px) {
+        .schedule-grid {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+        }
+
+        .day-card {
+            min-height: clamp(100px, 40vh, 150px);
         }
     }
 </style>
@@ -2585,77 +2303,36 @@
     /* Mobile specific styles */
     @media (max-width: 768px) {
         body {
-            padding: 4px;
+            padding: max(4px, 1vw);
         }
-        
+
         .container {
-            padding: 6px;
+            height: calc(100vh - max(8px, 2vw));
         }
-        
-        .header h1 {
-            font-size: 1.2rem;
-        }
-        
-        .header p {
-            font-size: 0.6rem;
-        }
-        
-        .schedule-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 4px;
-        }
-        
-        .day-header {
-            font-size: 0.7rem;
-        }
-        
-        .class-name {
-            font-size: 0.55rem;
-        }
-        
-        .class-time {
-            font-size: 0.45rem;
-        }
-        
-        .class-type {
-            font-size: 0.4rem;
-            padding: 1px 2px;
-        }
-        
-        .stats {
-            gap: 6px;
-        }
-        
-        .stat-card {
-            padding: 3px 6px;
-            min-width: 35px;
-        }
-        
-        .stat-number {
-            font-size: 0.8rem;
-        }
-        
-        .stat-label {
-            font-size: 0.45rem;
+
+        .class-item.cancelled::after {
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
         }
     }
 
     /* Extra small screens */
     @media (max-width: 480px) {
-        .schedule-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .header h1 {
-            font-size: 1rem;
-        }
-        
         .day-card {
-            padding: 4px;
+            min-height: clamp(120px, 25vh, 200px);
         }
-        
-        .class-item {
-            padding: 3px 4px;
+
+        .stats {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (orientation: landscape) and (max-height: 500px) {
+        .schedule-grid {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+        }
+
+        .day-card {
+            min-height: clamp(100px, 40vh, 150px);
         }
     }
 </style>
