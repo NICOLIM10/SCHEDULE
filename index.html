@@ -1,0 +1,2794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Schedule</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+            padding: 8px;
+        }
+
+        .container {
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .day-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            padding: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .day-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .day-header {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 6px;
+            padding-bottom: 4px;
+            border-bottom: 2px solid #3498db;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            text-align: center;
+        }
+
+        .classes-container {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #3498db transparent;
+        }
+
+        .classes-container::-webkit-scrollbar {
+            width: 2px;
+        }
+
+        .classes-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .classes-container::-webkit-scrollbar-thumb {
+            background: #3498db;
+            border-radius: 2px;
+        }
+
+        .class-item {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 6px;
+            padding: 6px 8px;
+            margin-bottom: 4px;
+            border-left: 3px solid #3498db;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .class-item:hover {
+            transform: translateX(2px);
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+        }
+
+        .class-name {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 2px;
+            line-height: 1.2;
+        }
+
+        .class-time {
+            font-size: 0.6rem;
+            color: #7f8c8d;
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .class-type {
+            display: inline-block;
+            padding: 2px 4px;
+            border-radius: 6px;
+            font-size: 0.5rem;
+            font-weight: 600;
+            margin-right: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+        }
+
+        .type-vr { background: #e74c3c; color: white; }
+        .type-lab { background: #27ae60; color: white; }
+        .type-lec { background: #f39c12; color: white; }
+        .type-room { background: #9b59b6; color: white; }
+
+        .monday .class-item { border-left-color: #e74c3c; }
+        .tuesday .class-item { border-left-color: #27ae60; }
+        .wednesday .class-item { border-left-color: #f39c12; }
+        .thursday .class-item { border-left-color: #9b59b6; }
+        .friday .class-item { border-left-color: #3498db; }
+        .saturday .class-item { border-left-color: #e67e22; }
+
+        .monday .day-header { color: #e74c3c; border-bottom-color: #e74c3c; }
+        .tuesday .day-header { color: #27ae60; border-bottom-color: #27ae60; }
+        .wednesday .day-header { color: #f39c12; border-bottom-color: #f39c12; }
+        .thursday .day-header { color: #9b59b6; border-bottom-color: #9b59b6; }
+        .friday .day-header { color: #3498db; border-bottom-color: #3498db; }
+        .saturday .day-header { color: #e67e22; border-bottom-color: #e67e22; }
+
+        .empty-day {
+            text-align: center;
+            color: #95a5a6;
+            font-style: italic;
+            font-size: 0.7rem;
+            padding: 15px 8px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 6px 12px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            min-width: 50px;
+        }
+
+        .stat-number {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #2c3e50;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.55rem;
+            color: #7f8c8d;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        /* Mobile specific styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 4px;
+            }
+            
+            .container {
+                padding: 6px;
+            }
+            
+            .header h1 {
+                font-size: 1.2rem;
+            }
+            
+            .header p {
+                font-size: 0.6rem;
+            }
+            
+            .schedule-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 4px;
+            }
+            
+            .day-header {
+                font-size: 0.7rem;
+            }
+            
+            .class-name {
+                font-size: 0.55rem;
+            }
+            
+            .class-time {
+                font-size: 0.45rem;
+            }
+            
+            .class-type {
+                font-size: 0.4rem;
+                padding: 1px 2px;
+            }
+            
+            .stats {
+                gap: 6px;
+            }
+            
+            .stat-card {
+                padding: 3px 6px;
+                min-width: 35px;
+            }
+            
+            .stat-number {
+                font-size: 0.8rem;
+            }
+            
+            .stat-label {
+                font-size: 0.45rem;
+            }
+        }
+
+        /* Extra small screens */
+        @media (max-width: 480px) {
+            .schedule-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1rem;
+            }
+            
+            .day-card {
+                padding: 4px;
+            }
+            
+            .class-item {
+                padding: 3px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Weekly Schedule</h1>
+            <p>Your Academic Journey</p>
+        </div>
+
+        <div class="schedule-grid">
+            <!-- Monday -->
+            <div class="day-card monday">
+                <div class="day-header">Monday</div>
+                <div class="classes-container">
+                    <div class="class-item">
+                        <div class="class-name">Art Appreciation</div>
+                        <div class="class-time">10:00 AM - 11:30 AM</div>
+                        <span class="class-type type-vr">VR-CAS</span>
+                    </div>
+                    <div class="class-item">
+                        <div class="class-name">Networking & Communication</div>
+                        <div class="class-time">12:30 PM - 3:30 PM</div>
+                        <span class="class-type type-lab">LAB</span>
+                        <span class="class-type type-room">M-209</span>
+                    </div>
+                    <div class="class-item">
+                        <div class="class-name">Life & Works of Rizal</div>
+                        <div class="class-time">4:30 PM - 6:00 PM</div>
+                        <span class="class-type type-vr">VR-CAS</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tuesday -->
+            <div class="day-card tuesday">
+                <div class="day-header">Tuesday</div>
+                <div class="classes-container">
+                    <div class="class-item">
+                        <div class="class-name">Philippine History</div>
+                        <div class="class-time">8:00 AM - 9:00 AM</div>
+                        <span class="class-type type-vr">VR-CAS</span>
+                    </div>
+                    <div class="class-item">
+                        <div class="class-name">PE</div>
+                        <div class="class-time">10:00 AM - 12:00 PM</div>
+                        <span class="class-type type-room">G-522</span>
+                    </div>
+                    <div class="class-item">
+                        <div class="class-name">World Literature</div>
+                        <div class="class-time">3:30 PM - 5:00 PM</div>
+                        <span class="class-type type-vr">VR-CAS</span>
+                    </div>
+                    <div class="class-item">
+                        <div class="class-name">Data Structure</div>
+                        <div class="class-time">5:00 PM - 7:00 PM</div>
+                        <span class="class-type type-lec">LEC</span>
+                        <span class="class-type type-room">M-203</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wednesday -->
+            <div class="day-card wednesday">
+                <div class="day-header">Wednesday</div>
+                <div class="empty-day">No classes scheduled</div>
+            </div>
+
+            <!-- Thursday -->
+            <div class="day-card thursday">
+                <div class="day-header">Thursday</div>
+                <div class="classes-container">
+                    <div class="class-item">
+                        <div class="class-name">Networking & Communication</div>
+                        <div class="class-time">8:00 AM - 10:00 AM</div>
+                        <span class="class-type type-lec">LEC</span>
+                        <span class="class-type type-vr">VR-CCS</span>
+                    </div>
+                    <div class="class-item">
+                        <div class="class-name">Art Appreciation</div>
+                        <div class="class-time">10:00 AM - 11:30 AM</div>
+                        <span class="class-type type-vr">VR-CCS</span>
+                    </div>
+                    <div class="class-item">
+                        <div class="class-name">FCL</div>
+                        <div class="class-time">1:00 PM - 3:00 PM</div>
+                        <span class="class-type type-vr">VR-CCS</span>
+                    </div>
+                    <div class="class-item">
+                        <div class="class-name">Life & Works of Rizal</div>
+                        <div class="class-time">4:30 PM - 6:00 PM</div>
+                        <span class="class-type type-vr">VR-CCS</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Friday -->
+            <div class="day-card friday">
+                <div class="day-header">Friday</div>
+                <div class="classes-container">
+                    <div class="class-item">
+                        <div class="class-name">Philippine History</div>
+                        <div class="class-time">8:00 AM - 9:00 AM</div>
+                        <span class="class-type type-vr">VR-CAS</span>
+                    </div>
+                    <div class="class-item">
+                        <div class="class-name">Graphics & Visual Computing</div>
+                        <div class="class-time">1:00 PM - 3:00 PM</div>
+                        <span class="class-type type-lec">LEC</span>
+                        <span class="class-type type-room">M-203</span>
+                    </div>
+                    <div class="class-item">
+                        <div class="class-name">World Literature</div>
+                        <div class="class-time">3:30 PM - 5:00 PM</div>
+                        <span class="class-type type-vr">VR-CAS</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Saturday -->
+            <div class="day-card saturday">
+                <div class="day-header">Saturday</div>
+                <div class="classes-container">
+                    <div class="class-item">
+                        <div class="class-name">Graphics & Visual Computing</div>
+                        <div class="class-time">1:30 PM - 4:30 PM</div>
+                        <span class="class-type type-lab">LAB</span>
+                        <span class="class-type type-room">M-215</span>
+                    </div>
+                    <div class="class-item">
+                        <div class="class-name">Data Structure</div>
+                        <div class="class-time">5:00 PM - 8:00 PM</div>
+                        <span class="class-type type-lab">LAB</span>
+                        <span class="class-type type-room">M-209</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">16</div>
+                <div class="stat-label">Classes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">6</div>
+                <div class="stat-label">Days</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">8</div>
+                <div class="stat-label">Subjects</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script>
+    // Request notification permission when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        if (Notification.permission !== 'granted') {
+            Notification.requestPermission();
+        }
+        checkSchedule();
+        // Check schedule every minute
+        setInterval(checkSchedule, 60000);
+    });
+
+    function checkSchedule() {
+        const now = new Date();
+        const day = now.getDay(); // 0 = Sunday, 1 = Monday, ...
+        const currentTime = now.getHours() * 60 + now.getMinutes();
+
+        // Get all class items
+        const classes = document.querySelectorAll('.class-item');
+        
+        classes.forEach(classItem => {
+            // Skip if class is cancelled
+            if (classItem.classList.contains('cancelled')) return;
+
+            const timeElement = classItem.querySelector('.class-time').textContent;
+            const className = classItem.querySelector('.class-name').textContent;
+            const [startTime] = timeElement.split(' - ');
+            
+            // Convert class time to minutes
+            const [hours, minutes] = startTime.match(/\d+/g);
+            const isPM = startTime.includes('PM');
+            let classTimeInMinutes = (parseInt(hours) % 12 + (isPM ? 12 : 0)) * 60 + parseInt(minutes);
+            
+            // Notify 10 minutes before class
+            if (classTimeInMinutes - currentTime === 10) {
+                notifyUser(className, startTime);
+            }
+        });
+    }
+
+    // Add cancel buttons to all classes
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get all class items
+        const classes = document.querySelectorAll('.class-item');
+        classes.forEach(classItem => {
+            const controls = document.createElement('div');
+            controls.className = 'class-controls';
+            
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'cancel-btn';
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.onclick = function() {
+                classItem.classList.toggle('cancelled');
+                cancelBtn.textContent = classItem.classList.contains('cancelled') ? 'Restore' : 'Cancel';
+            };
+            
+            controls.appendChild(cancelBtn);
+            classItem.appendChild(controls);
+        });
+    });
+
+    function notifyUser(className, startTime) {
+        if (Notification.permission === 'granted') {
+            new Notification('Class Reminder', {
+                body: `${className} starts at ${startTime} (in 10 minutes)`,
+                icon: '/favicon.ico'
+            });
+        }
+    }
+</script>
+<style>
+    .class-controls {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 4px;
+        gap: 4px;
+    }
+
+    .cancel-btn {
+        background: #ff4757;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 0.6rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 2px 4px rgba(255, 71, 87, 0.2);
+    }
+
+    .cancel-btn::before {
+        content: '×';
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    .cancel-btn:hover {
+        background: #ff6b81;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(255, 71, 87, 0.3);
+    }
+
+    .cancel-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(255, 71, 87, 0.2);
+    }
+
+    .class-item.cancelled .cancel-btn {
+        background: #2ecc71;
+    }
+
+    .class-item.cancelled .cancel-btn::before {
+        content: '✓';
+    }
+
+    .class-item.cancelled .cancel-btn:hover {
+        background: #27ae60;
+        box-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
+    }
+
+    .class-item.cancelled {
+        opacity: 0.7;
+        background: #f1f2f6;
+        border-left-color: #a4b0be;
+    }
+
+    .class-item.cancelled::after {
+        content: 'CANCELLED';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-15deg);
+        font-size: 0.9rem;
+        color: #ff4757;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+        pointer-events: none;
+        opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+        .cancel-btn {
+            padding: 2px 8px;
+            font-size: 0.5rem;
+        }
+
+        .class-item.cancelled::after {
+            font-size: 0.7rem;
+        }
+    }
+
+    .class-item {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 6px;
+        padding: 6px 8px;
+        margin-bottom: 4px;
+        border-left: 3px solid #3498db;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .class-item:hover {
+        transform: translateX(2px);
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+    }
+
+    .class-name {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 2px;
+        line-height: 1.2;
+    }
+
+    .class-time {
+        font-size: 0.6rem;
+        color: #7f8c8d;
+        font-weight: 500;
+        margin-bottom: 3px;
+    }
+
+    .class-type {
+        display: inline-block;
+        padding: 2px 4px;
+        border-radius: 6px;
+        font-size: 0.5rem;
+        font-weight: 600;
+        margin-right: 3px;
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+    }
+
+    .type-vr { background: #e74c3c; color: white; }
+    .type-lab { background: #27ae60; color: white; }
+    .type-lec { background: #f39c12; color: white; }
+    .type-room { background: #9b59b6; color: white; }
+
+    .monday .class-item { border-left-color: #e74c3c; }
+    .tuesday .class-item { border-left-color: #27ae60; }
+    .wednesday .class-item { border-left-color: #f39c12; }
+    .thursday .class-item { border-left-color: #9b59b6; }
+    .friday .class-item { border-left-color: #3498db; }
+    .saturday .class-item { border-left-color: #e67e22; }
+
+    .monday .day-header { color: #e74c3c; border-bottom-color: #e74c3c; }
+    .tuesday .day-header { color: #27ae60; border-bottom-color: #27ae60; }
+    .wednesday .day-header { color: #f39c12; border-bottom-color: #f39c12; }
+    .thursday .day-header { color: #9b59b6; border-bottom-color: #9b59b6; }
+    .friday .day-header { color: #3498db; border-bottom-color: #3498db; }
+    .saturday .day-header { color: #e67e22; border-bottom-color: #e67e22; }
+
+    .empty-day {
+        text-align: center;
+        color: #95a5a6;
+        font-style: italic;
+        font-size: 0.7rem;
+        padding: 15px 8px;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .stats {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 6px 12px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        min-width: 50px;
+    }
+
+    .stat-number {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2c3e50;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.55rem;
+        color: #7f8c8d;
+        font-weight: 500;
+        margin-top: 2px;
+    }
+
+    /* Mobile specific styles */
+    @media (max-width: 768px) {
+        body {
+            padding: 4px;
+        }
+        
+        .container {
+            padding: 6px;
+        }
+        
+        .header h1 {
+            font-size: 1.2rem;
+        }
+        
+        .header p {
+            font-size: 0.6rem;
+        }
+        
+        .schedule-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px;
+        }
+        
+        .day-header {
+            font-size: 0.7rem;
+        }
+        
+        .class-name {
+            font-size: 0.55rem;
+        }
+        
+        .class-time {
+            font-size: 0.45rem;
+        }
+        
+        .class-type {
+            font-size: 0.4rem;
+            padding: 1px 2px;
+        }
+        
+        .stats {
+            gap: 6px;
+        }
+        
+        .stat-card {
+            padding: 3px 6px;
+            min-width: 35px;
+        }
+        
+        .stat-number {
+            font-size: 0.8rem;
+        }
+        
+        .stat-label {
+            font-size: 0.45rem;
+        }
+    }
+
+    /* Extra small screens */
+    @media (max-width: 480px) {
+        .schedule-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .header h1 {
+            font-size: 1rem;
+        }
+        
+        .day-card {
+            padding: 4px;
+        }
+        
+        .class-item {
+            padding: 3px 4px;
+        }
+    }
+</style>
+</body>
+</html>
+<style>
+    .class-controls {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 4px;
+        gap: 4px;
+    }
+
+    .cancel-btn {
+        background: #ff4757;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 0.6rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 2px 4px rgba(255, 71, 87, 0.2);
+    }
+
+    .cancel-btn::before {
+        content: '×';
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    .cancel-btn:hover {
+        background: #ff6b81;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(255, 71, 87, 0.3);
+    }
+
+    .cancel-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(255, 71, 87, 0.2);
+    }
+
+    .class-item.cancelled .cancel-btn {
+        background: #2ecc71;
+    }
+
+    .class-item.cancelled .cancel-btn::before {
+        content: '✓';
+    }
+
+    .class-item.cancelled .cancel-btn:hover {
+        background: #27ae60;
+        box-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
+    }
+
+    .class-item.cancelled {
+        opacity: 0.7;
+        background: #f1f2f6;
+        border-left-color: #a4b0be;
+    }
+
+    .class-item.cancelled::after {
+        content: 'CANCELLED';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-15deg);
+        font-size: 0.9rem;
+        color: #ff4757;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+        pointer-events: none;
+        opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+        .cancel-btn {
+            padding: 2px 8px;
+            font-size: 0.5rem;
+        }
+
+        .class-item.cancelled::after {
+            font-size: 0.7rem;
+        }
+    }
+
+    .class-item {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 6px;
+        padding: 6px 8px;
+        margin-bottom: 4px;
+        border-left: 3px solid #3498db;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .class-item:hover {
+        transform: translateX(2px);
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+    }
+
+    .class-name {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 2px;
+        line-height: 1.2;
+    }
+
+    .class-time {
+        font-size: 0.6rem;
+        color: #7f8c8d;
+        font-weight: 500;
+        margin-bottom: 3px;
+    }
+
+    .class-type {
+        display: inline-block;
+        padding: 2px 4px;
+        border-radius: 6px;
+        font-size: 0.5rem;
+        font-weight: 600;
+        margin-right: 3px;
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+    }
+
+    .type-vr { background: #e74c3c; color: white; }
+    .type-lab { background: #27ae60; color: white; }
+    .type-lec { background: #f39c12; color: white; }
+    .type-room { background: #9b59b6; color: white; }
+
+    .monday .class-item { border-left-color: #e74c3c; }
+    .tuesday .class-item { border-left-color: #27ae60; }
+    .wednesday .class-item { border-left-color: #f39c12; }
+    .thursday .class-item { border-left-color: #9b59b6; }
+    .friday .class-item { border-left-color: #3498db; }
+    .saturday .class-item { border-left-color: #e67e22; }
+
+    .monday .day-header { color: #e74c3c; border-bottom-color: #e74c3c; }
+    .tuesday .day-header { color: #27ae60; border-bottom-color: #27ae60; }
+    .wednesday .day-header { color: #f39c12; border-bottom-color: #f39c12; }
+    .thursday .day-header { color: #9b59b6; border-bottom-color: #9b59b6; }
+    .friday .day-header { color: #3498db; border-bottom-color: #3498db; }
+    .saturday .day-header { color: #e67e22; border-bottom-color: #e67e22; }
+
+    .empty-day {
+        text-align: center;
+        color: #95a5a6;
+        font-style: italic;
+        font-size: 0.7rem;
+        padding: 15px 8px;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .stats {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 6px 12px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        min-width: 50px;
+    }
+
+    .stat-number {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2c3e50;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.55rem;
+        color: #7f8c8d;
+        font-weight: 500;
+        margin-top: 2px;
+    }
+
+    /* Mobile specific styles */
+    @media (max-width: 768px) {
+        body {
+            padding: 4px;
+        }
+        
+        .container {
+            padding: 6px;
+        }
+        
+        .header h1 {
+            font-size: 1.2rem;
+        }
+        
+        .header p {
+            font-size: 0.6rem;
+        }
+        
+        .schedule-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px;
+        }
+        
+        .day-header {
+            font-size: 0.7rem;
+        }
+        
+        .class-name {
+            font-size: 0.55rem;
+        }
+        
+        .class-time {
+            font-size: 0.45rem;
+        }
+        
+        .class-type {
+            font-size: 0.4rem;
+            padding: 1px 2px;
+        }
+        
+        .stats {
+            gap: 6px;
+        }
+        
+        .stat-card {
+            padding: 3px 6px;
+            min-width: 35px;
+        }
+        
+        .stat-number {
+            font-size: 0.8rem;
+        }
+        
+        .stat-label {
+            font-size: 0.45rem;
+        }
+    }
+
+    /* Extra small screens */
+    @media (max-width: 480px) {
+        .schedule-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .header h1 {
+            font-size: 1rem;
+        }
+        
+        .day-card {
+            padding: 4px;
+        }
+        
+        .class-item {
+            padding: 3px 4px;
+        }
+    }
+</style>
+</body>
+</html>
+<style>
+    .class-controls {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 4px;
+        gap: 4px;
+    }
+
+    .cancel-btn {
+        background: #ff4757;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 0.6rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 2px 4px rgba(255, 71, 87, 0.2);
+    }
+
+    .cancel-btn::before {
+        content: '×';
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    .cancel-btn:hover {
+        background: #ff6b81;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(255, 71, 87, 0.3);
+    }
+
+    .cancel-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(255, 71, 87, 0.2);
+    }
+
+    .class-item.cancelled .cancel-btn {
+        background: #2ecc71;
+    }
+
+    .class-item.cancelled .cancel-btn::before {
+        content: '✓';
+    }
+
+    .class-item.cancelled .cancel-btn:hover {
+        background: #27ae60;
+        box-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
+    }
+
+    .class-item.cancelled {
+        opacity: 0.7;
+        background: #f1f2f6;
+        border-left-color: #a4b0be;
+    }
+
+    .class-item.cancelled::after {
+        content: 'CANCELLED';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-15deg);
+        font-size: 0.9rem;
+        color: #ff4757;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+        pointer-events: none;
+        opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+        .cancel-btn {
+            padding: 2px 8px;
+            font-size: 0.5rem;
+        }
+
+        .class-item.cancelled::after {
+            font-size: 0.7rem;
+        }
+    }
+
+    .class-item {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 6px;
+        padding: 6px 8px;
+        margin-bottom: 4px;
+        border-left: 3px solid #3498db;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .class-item:hover {
+        transform: translateX(2px);
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+    }
+
+    .class-name {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 2px;
+        line-height: 1.2;
+    }
+
+    .class-time {
+        font-size: 0.6rem;
+        color: #7f8c8d;
+        font-weight: 500;
+        margin-bottom: 3px;
+    }
+
+    .class-type {
+        display: inline-block;
+        padding: 2px 4px;
+        border-radius: 6px;
+        font-size: 0.5rem;
+        font-weight: 600;
+        margin-right: 3px;
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+    }
+
+    .type-vr { background: #e74c3c; color: white; }
+    .type-lab { background: #27ae60; color: white; }
+    .type-lec { background: #f39c12; color: white; }
+    .type-room { background: #9b59b6; color: white; }
+
+    .monday .class-item { border-left-color: #e74c3c; }
+    .tuesday .class-item { border-left-color: #27ae60; }
+    .wednesday .class-item { border-left-color: #f39c12; }
+    .thursday .class-item { border-left-color: #9b59b6; }
+    .friday .class-item { border-left-color: #3498db; }
+    .saturday .class-item { border-left-color: #e67e22; }
+
+    .monday .day-header { color: #e74c3c; border-bottom-color: #e74c3c; }
+    .tuesday .day-header { color: #27ae60; border-bottom-color: #27ae60; }
+    .wednesday .day-header { color: #f39c12; border-bottom-color: #f39c12; }
+    .thursday .day-header { color: #9b59b6; border-bottom-color: #9b59b6; }
+    .friday .day-header { color: #3498db; border-bottom-color: #3498db; }
+    .saturday .day-header { color: #e67e22; border-bottom-color: #e67e22; }
+
+    .empty-day {
+        text-align: center;
+        color: #95a5a6;
+        font-style: italic;
+        font-size: 0.7rem;
+        padding: 15px 8px;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .stats {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 6px 12px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        min-width: 50px;
+    }
+
+    .stat-number {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2c3e50;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.55rem;
+        color: #7f8c8d;
+        font-weight: 500;
+        margin-top: 2px;
+    }
+
+    /* Mobile specific styles */
+    @media (max-width: 768px) {
+        body {
+            padding: 4px;
+        }
+        
+        .container {
+            padding: 6px;
+        }
+        
+        .header h1 {
+            font-size: 1.2rem;
+        }
+        
+        .header p {
+            font-size: 0.6rem;
+        }
+        
+        .schedule-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px;
+        }
+        
+        .day-header {
+            font-size: 0.7rem;
+        }
+        
+        .class-name {
+            font-size: 0.55rem;
+        }
+        
+        .class-time {
+            font-size: 0.45rem;
+        }
+        
+        .class-type {
+            font-size: 0.4rem;
+            padding: 1px 2px;
+        }
+        
+        .stats {
+            gap: 6px;
+        }
+        
+        .stat-card {
+            padding: 3px 6px;
+            min-width: 35px;
+        }
+        
+        .stat-number {
+            font-size: 0.8rem;
+        }
+        
+        .stat-label {
+            font-size: 0.45rem;
+        }
+    }
+
+    /* Extra small screens */
+    @media (max-width: 480px) {
+        .schedule-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .header h1 {
+            font-size: 1rem;
+        }
+        
+        .day-card {
+            padding: 4px;
+        }
+        
+        .class-item {
+            padding: 3px 4px;
+        }
+    }
+</style>
+</body>
+</html>
+<style>
+    .class-controls {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 4px;
+        gap: 4px;
+    }
+
+    .cancel-btn {
+        background: #ff4757;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 0.6rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 2px 4px rgba(255, 71, 87, 0.2);
+    }
+
+    .cancel-btn::before {
+        content: '×';
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    .cancel-btn:hover {
+        background: #ff6b81;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(255, 71, 87, 0.3);
+    }
+
+    .cancel-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(255, 71, 87, 0.2);
+    }
+
+    .class-item.cancelled .cancel-btn {
+        background: #2ecc71;
+    }
+
+    .class-item.cancelled .cancel-btn::before {
+        content: '✓';
+    }
+
+    .class-item.cancelled .cancel-btn:hover {
+        background: #27ae60;
+        box-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
+    }
+
+    .class-item.cancelled {
+        opacity: 0.7;
+        background: #f1f2f6;
+        border-left-color: #a4b0be;
+    }
+
+    .class-item.cancelled::after {
+        content: 'CANCELLED';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-15deg);
+        font-size: 0.9rem;
+        color: #ff4757;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+        pointer-events: none;
+        opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+        .cancel-btn {
+            padding: 2px 8px;
+            font-size: 0.5rem;
+        }
+
+        .class-item.cancelled::after {
+            font-size: 0.7rem;
+        }
+    }
+
+    .class-item {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 6px;
+        padding: 6px 8px;
+        margin-bottom: 4px;
+        border-left: 3px solid #3498db;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .class-item:hover {
+        transform: translateX(2px);
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+    }
+
+    .class-name {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 2px;
+        line-height: 1.2;
+    }
+
+    .class-time {
+        font-size: 0.6rem;
+        color: #7f8c8d;
+        font-weight: 500;
+        margin-bottom: 3px;
+    }
+
+    .class-type {
+        display: inline-block;
+        padding: 2px 4px;
+        border-radius: 6px;
+        font-size: 0.5rem;
+        font-weight: 600;
+        margin-right: 3px;
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+    }
+
+    .type-vr { background: #e74c3c; color: white; }
+    .type-lab { background: #27ae60; color: white; }
+    .type-lec { background: #f39c12; color: white; }
+    .type-room { background: #9b59b6; color: white; }
+
+    .monday .class-item { border-left-color: #e74c3c; }
+    .tuesday .class-item { border-left-color: #27ae60; }
+    .wednesday .class-item { border-left-color: #f39c12; }
+    .thursday .class-item { border-left-color: #9b59b6; }
+    .friday .class-item { border-left-color: #3498db; }
+    .saturday .class-item { border-left-color: #e67e22; }
+
+    .monday .day-header { color: #e74c3c; border-bottom-color: #e74c3c; }
+    .tuesday .day-header { color: #27ae60; border-bottom-color: #27ae60; }
+    .wednesday .day-header { color: #f39c12; border-bottom-color: #f39c12; }
+    .thursday .day-header { color: #9b59b6; border-bottom-color: #9b59b6; }
+    .friday .day-header { color: #3498db; border-bottom-color: #3498db; }
+    .saturday .day-header { color: #e67e22; border-bottom-color: #e67e22; }
+
+    .empty-day {
+        text-align: center;
+        color: #95a5a6;
+        font-style: italic;
+        font-size: 0.7rem;
+        padding: 15px 8px;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .stats {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 6px 12px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        min-width: 50px;
+    }
+
+    .stat-number {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2c3e50;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.55rem;
+        color: #7f8c8d;
+        font-weight: 500;
+        margin-top: 2px;
+    }
+
+    /* Mobile specific styles */
+    @media (max-width: 768px) {
+        body {
+            padding: 4px;
+        }
+        
+        .container {
+            padding: 6px;
+        }
+        
+        .header h1 {
+            font-size: 1.2rem;
+        }
+        
+        .header p {
+            font-size: 0.6rem;
+        }
+        
+        .schedule-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px;
+        }
+        
+        .day-header {
+            font-size: 0.7rem;
+        }
+        
+        .class-name {
+            font-size: 0.55rem;
+        }
+        
+        .class-time {
+            font-size: 0.45rem;
+        }
+        
+        .class-type {
+            font-size: 0.4rem;
+            padding: 1px 2px;
+        }
+        
+        .stats {
+            gap: 6px;
+        }
+        
+        .stat-card {
+            padding: 3px 6px;
+            min-width: 35px;
+        }
+        
+        .stat-number {
+            font-size: 0.8rem;
+        }
+        
+        .stat-label {
+            font-size: 0.45rem;
+        }
+    }
+
+    /* Extra small screens */
+    @media (max-width: 480px) {
+        .schedule-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .header h1 {
+            font-size: 1rem;
+        }
+        
+        .day-card {
+            padding: 4px;
+        }
+        
+        .class-item {
+            padding: 3px 4px;
+        }
+    }
+</style>
+</body>
+</html>
+<style>
+    .class-controls {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 4px;
+        gap: 4px;
+    }
+
+    .cancel-btn {
+        background: #ff4757;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 0.6rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 2px 4px rgba(255, 71, 87, 0.2);
+    }
+
+    .cancel-btn::before {
+        content: '×';
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    .cancel-btn:hover {
+        background: #ff6b81;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(255, 71, 87, 0.3);
+    }
+
+    .cancel-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(255, 71, 87, 0.2);
+    }
+
+    .class-item.cancelled .cancel-btn {
+        background: #2ecc71;
+    }
+
+    .class-item.cancelled .cancel-btn::before {
+        content: '✓';
+    }
+
+    .class-item.cancelled .cancel-btn:hover {
+        background: #27ae60;
+        box-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
+    }
+
+    .class-item.cancelled {
+        opacity: 0.7;
+        background: #f1f2f6;
+        border-left-color: #a4b0be;
+    }
+
+    .class-item.cancelled::after {
+        content: 'CANCELLED';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-15deg);
+        font-size: 0.9rem;
+        color: #ff4757;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+        pointer-events: none;
+        opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+        .cancel-btn {
+            padding: 2px 8px;
+            font-size: 0.5rem;
+        }
+
+        .class-item.cancelled::after {
+            font-size: 0.7rem;
+        }
+    }
+
+    .class-item {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 6px;
+        padding: 6px 8px;
+        margin-bottom: 4px;
+        border-left: 3px solid #3498db;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .class-item:hover {
+        transform: translateX(2px);
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+    }
+
+    .class-name {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 2px;
+        line-height: 1.2;
+    }
+
+    .class-time {
+        font-size: 0.6rem;
+        color: #7f8c8d;
+        font-weight: 500;
+        margin-bottom: 3px;
+    }
+
+    .class-type {
+        display: inline-block;
+        padding: 2px 4px;
+        border-radius: 6px;
+        font-size: 0.5rem;
+        font-weight: 600;
+        margin-right: 3px;
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+    }
+
+    .type-vr { background: #e74c3c; color: white; }
+    .type-lab { background: #27ae60; color: white; }
+    .type-lec { background: #f39c12; color: white; }
+    .type-room { background: #9b59b6; color: white; }
+
+    .monday .class-item { border-left-color: #e74c3c; }
+    .tuesday .class-item { border-left-color: #27ae60; }
+    .wednesday .class-item { border-left-color: #f39c12; }
+    .thursday .class-item { border-left-color: #9b59b6; }
+    .friday .class-item { border-left-color: #3498db; }
+    .saturday .class-item { border-left-color: #e67e22; }
+
+    .monday .day-header { color: #e74c3c; border-bottom-color: #e74c3c; }
+    .tuesday .day-header { color: #27ae60; border-bottom-color: #27ae60; }
+    .wednesday .day-header { color: #f39c12; border-bottom-color: #f39c12; }
+    .thursday .day-header { color: #9b59b6; border-bottom-color: #9b59b6; }
+    .friday .day-header { color: #3498db; border-bottom-color: #3498db; }
+    .saturday .day-header { color: #e67e22; border-bottom-color: #e67e22; }
+
+    .empty-day {
+        text-align: center;
+        color: #95a5a6;
+        font-style: italic;
+        font-size: 0.7rem;
+        padding: 15px 8px;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .stats {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 6px 12px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        min-width: 50px;
+    }
+
+    .stat-number {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2c3e50;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.55rem;
+        color: #7f8c8d;
+        font-weight: 500;
+        margin-top: 2px;
+    }
+
+    /* Mobile specific styles */
+    @media (max-width: 768px) {
+        body {
+            padding: 4px;
+        }
+        
+        .container {
+            padding: 6px;
+        }
+        
+        .header h1 {
+            font-size: 1.2rem;
+        }
+        
+        .header p {
+            font-size: 0.6rem;
+        }
+        
+        .schedule-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px;
+        }
+        
+        .day-header {
+            font-size: 0.7rem;
+        }
+        
+        .class-name {
+            font-size: 0.55rem;
+        }
+        
+        .class-time {
+            font-size: 0.45rem;
+        }
+        
+        .class-type {
+            font-size: 0.4rem;
+            padding: 1px 2px;
+        }
+        
+        .stats {
+            gap: 6px;
+        }
+        
+        .stat-card {
+            padding: 3px 6px;
+            min-width: 35px;
+        }
+        
+        .stat-number {
+            font-size: 0.8rem;
+        }
+        
+        .stat-label {
+            font-size: 0.45rem;
+        }
+    }
+
+    /* Extra small screens */
+    @media (max-width: 480px) {
+        .schedule-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .header h1 {
+            font-size: 1rem;
+        }
+        
+        .day-card {
+            padding: 4px;
+        }
+        
+        .class-item {
+            padding: 3px 4px;
+        }
+    }
+</style>
+</body>
+</html>
+<style>
+    .class-controls {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 4px;
+        gap: 4px;
+    }
+
+    .cancel-btn {
+        background: #ff4757;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 0.6rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 2px 4px rgba(255, 71, 87, 0.2);
+    }
+
+    .cancel-btn::before {
+        content: '×';
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    .cancel-btn:hover {
+        background: #ff6b81;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(255, 71, 87, 0.3);
+    }
+
+    .cancel-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(255, 71, 87, 0.2);
+    }
+
+    .class-item.cancelled .cancel-btn {
+        background: #2ecc71;
+    }
+
+    .class-item.cancelled .cancel-btn::before {
+        content: '✓';
+    }
+
+    .class-item.cancelled .cancel-btn:hover {
+        background: #27ae60;
+        box-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
+    }
+
+    .class-item.cancelled {
+        opacity: 0.7;
+        background: #f1f2f6;
+        border-left-color: #a4b0be;
+    }
+
+    .class-item.cancelled::after {
+        content: 'CANCELLED';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-15deg);
+        font-size: 0.9rem;
+        color: #ff4757;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+        pointer-events: none;
+        opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+        .cancel-btn {
+            padding: 2px 8px;
+            font-size: 0.5rem;
+        }
+
+        .class-item.cancelled::after {
+            font-size: 0.7rem;
+        }
+    }
+
+    .class-item {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 6px;
+        padding: 6px 8px;
+        margin-bottom: 4px;
+        border-left: 3px solid #3498db;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .class-item:hover {
+        transform: translateX(2px);
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+    }
+
+    .class-name {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 2px;
+        line-height: 1.2;
+    }
+
+    .class-time {
+        font-size: 0.6rem;
+        color: #7f8c8d;
+        font-weight: 500;
+        margin-bottom: 3px;
+    }
+
+    .class-type {
+        display: inline-block;
+        padding: 2px 4px;
+        border-radius: 6px;
+        font-size: 0.5rem;
+        font-weight: 600;
+        margin-right: 3px;
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+    }
+
+    .type-vr { background: #e74c3c; color: white; }
+    .type-lab { background: #27ae60; color: white; }
+    .type-lec { background: #f39c12; color: white; }
+    .type-room { background: #9b59b6; color: white; }
+
+    .monday .class-item { border-left-color: #e74c3c; }
+    .tuesday .class-item { border-left-color: #27ae60; }
+    .wednesday .class-item { border-left-color: #f39c12; }
+    .thursday .class-item { border-left-color: #9b59b6; }
+    .friday .class-item { border-left-color: #3498db; }
+    .saturday .class-item { border-left-color: #e67e22; }
+
+    .monday .day-header { color: #e74c3c; border-bottom-color: #e74c3c; }
+    .tuesday .day-header { color: #27ae60; border-bottom-color: #27ae60; }
+    .wednesday .day-header { color: #f39c12; border-bottom-color: #f39c12; }
+    .thursday .day-header { color: #9b59b6; border-bottom-color: #9b59b6; }
+    .friday .day-header { color: #3498db; border-bottom-color: #3498db; }
+    .saturday .day-header { color: #e67e22; border-bottom-color: #e67e22; }
+
+    .empty-day {
+        text-align: center;
+        color: #95a5a6;
+        font-style: italic;
+        font-size: 0.7rem;
+        padding: 15px 8px;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .stats {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 6px 12px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        min-width: 50px;
+    }
+
+    .stat-number {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2c3e50;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.55rem;
+        color: #7f8c8d;
+        font-weight: 500;
+        margin-top: 2px;
+    }
+
+    /* Mobile specific styles */
+    @media (max-width: 768px) {
+        body {
+            padding: 4px;
+        }
+        
+        .container {
+            padding: 6px;
+        }
+        
+        .header h1 {
+            font-size: 1.2rem;
+        }
+        
+        .header p {
+            font-size: 0.6rem;
+        }
+        
+        .schedule-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px;
+        }
+        
+        .day-header {
+            font-size: 0.7rem;
+        }
+        
+        .class-name {
+            font-size: 0.55rem;
+        }
+        
+        .class-time {
+            font-size: 0.45rem;
+        }
+        
+        .class-type {
+            font-size: 0.4rem;
+            padding: 1px 2px;
+        }
+        
+        .stats {
+            gap: 6px;
+        }
+        
+        .stat-card {
+            padding: 3px 6px;
+            min-width: 35px;
+        }
+        
+        .stat-number {
+            font-size: 0.8rem;
+        }
+        
+        .stat-label {
+            font-size: 0.45rem;
+        }
+    }
+
+    /* Extra small screens */
+    @media (max-width: 480px) {
+        .schedule-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .header h1 {
+            font-size: 1rem;
+        }
+        
+        .day-card {
+            padding: 4px;
+        }
+        
+        .class-item {
+            padding: 3px 4px;
+        }
+    }
+</style>
+</body>
+</html>
+<style>
+    .class-controls {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 4px;
+        gap: 4px;
+    }
+
+    .cancel-btn {
+        background: #ff4757;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 0.6rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 2px 4px rgba(255, 71, 87, 0.2);
+    }
+
+    .cancel-btn::before {
+        content: '×';
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    .cancel-btn:hover {
+        background: #ff6b81;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(255, 71, 87, 0.3);
+    }
+
+    .cancel-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(255, 71, 87, 0.2);
+    }
+
+    .class-item.cancelled .cancel-btn {
+        background: #2ecc71;
+    }
+
+    .class-item.cancelled .cancel-btn::before {
+        content: '✓';
+    }
+
+    .class-item.cancelled .cancel-btn:hover {
+        background: #27ae60;
+        box-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
+    }
+
+    .class-item.cancelled {
+        opacity: 0.7;
+        background: #f1f2f6;
+        border-left-color: #a4b0be;
+    }
+
+    .class-item.cancelled::after {
+        content: 'CANCELLED';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-15deg);
+        font-size: 0.9rem;
+        color: #ff4757;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+        pointer-events: none;
+        opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+        .cancel-btn {
+            padding: 2px 8px;
+            font-size: 0.5rem;
+        }
+
+        .class-item.cancelled::after {
+            font-size: 0.7rem;
+        }
+    }
+
+    .class-item {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 6px;
+        padding: 6px 8px;
+        margin-bottom: 4px;
+        border-left: 3px solid #3498db;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .class-item:hover {
+        transform: translateX(2px);
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+    }
+
+    .class-name {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 2px;
+        line-height: 1.2;
+    }
+
+    .class-time {
+        font-size: 0.6rem;
+        color: #7f8c8d;
+        font-weight: 500;
+        margin-bottom: 3px;
+    }
+
+    .class-type {
+        display: inline-block;
+        padding: 2px 4px;
+        border-radius: 6px;
+        font-size: 0.5rem;
+        font-weight: 600;
+        margin-right: 3px;
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+    }
+
+    .type-vr { background: #e74c3c; color: white; }
+    .type-lab { background: #27ae60; color: white; }
+    .type-lec { background: #f39c12; color: white; }
+    .type-room { background: #9b59b6; color: white; }
+
+    .monday .class-item { border-left-color: #e74c3c; }
+    .tuesday .class-item { border-left-color: #27ae60; }
+    .wednesday .class-item { border-left-color: #f39c12; }
+    .thursday .class-item { border-left-color: #9b59b6; }
+    .friday .class-item { border-left-color: #3498db; }
+    .saturday .class-item { border-left-color: #e67e22; }
+
+    .monday .day-header { color: #e74c3c; border-bottom-color: #e74c3c; }
+    .tuesday .day-header { color: #27ae60; border-bottom-color: #27ae60; }
+    .wednesday .day-header { color: #f39c12; border-bottom-color: #f39c12; }
+    .thursday .day-header { color: #9b59b6; border-bottom-color: #9b59b6; }
+    .friday .day-header { color: #3498db; border-bottom-color: #3498db; }
+    .saturday .day-header { color: #e67e22; border-bottom-color: #e67e22; }
+
+    .empty-day {
+        text-align: center;
+        color: #95a5a6;
+        font-style: italic;
+        font-size: 0.7rem;
+        padding: 15px 8px;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .stats {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 6px 12px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        min-width: 50px;
+    }
+
+    .stat-number {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2c3e50;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.55rem;
+        color: #7f8c8d;
+        font-weight: 500;
+        margin-top: 2px;
+    }
+
+    /* Mobile specific styles */
+    @media (max-width: 768px) {
+        body {
+            padding: 4px;
+        }
+        
+        .container {
+            padding: 6px;
+        }
+        
+        .header h1 {
+            font-size: 1.2rem;
+        }
+        
+        .header p {
+            font-size: 0.6rem;
+        }
+        
+        .schedule-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px;
+        }
+        
+        .day-header {
+            font-size: 0.7rem;
+        }
+        
+        .class-name {
+            font-size: 0.55rem;
+        }
+        
+        .class-time {
+            font-size: 0.45rem;
+        }
+        
+        .class-type {
+            font-size: 0.4rem;
+            padding: 1px 2px;
+        }
+        
+        .stats {
+            gap: 6px;
+        }
+        
+        .stat-card {
+            padding: 3px 6px;
+            min-width: 35px;
+        }
+        
+        .stat-number {
+            font-size: 0.8rem;
+        }
+        
+        .stat-label {
+            font-size: 0.45rem;
+        }
+    }
+
+    /* Extra small screens */
+    @media (max-width: 480px) {
+        .schedule-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .header h1 {
+            font-size: 1rem;
+        }
+        
+        .day-card {
+            padding: 4px;
+        }
+        
+        .class-item {
+            padding: 3px 4px;
+        }
+    }
+</style>
+</body>
+</html>
+<style>
+    .class-controls {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 4px;
+        gap: 4px;
+    }
+
+    .cancel-btn {
+        background: #ff4757;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 0.6rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 2px 4px rgba(255, 71, 87, 0.2);
+    }
+
+    .cancel-btn::before {
+        content: '×';
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    .cancel-btn:hover {
+        background: #ff6b81;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(255, 71, 87, 0.3);
+    }
+
+    .cancel-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(255, 71, 87, 0.2);
+    }
+
+    .class-item.cancelled .cancel-btn {
+        background: #2ecc71;
+    }
+
+    .class-item.cancelled .cancel-btn::before {
+        content: '✓';
+    }
+
+    .class-item.cancelled .cancel-btn:hover {
+        background: #27ae60;
+        box-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
+    }
+
+    .class-item.cancelled {
+        opacity: 0.7;
+        background: #f1f2f6;
+        border-left-color: #a4b0be;
+    }
+
+    .class-item.cancelled::after {
+        content: 'CANCELLED';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-15deg);
+        font-size: 0.9rem;
+        color: #ff4757;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+        pointer-events: none;
+        opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+        .cancel-btn {
+            padding: 2px 8px;
+            font-size: 0.5rem;
+        }
+
+        .class-item.cancelled::after {
+            font-size: 0.7rem;
+        }
+    }
+
+    .class-item {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 6px;
+        padding: 6px 8px;
+        margin-bottom: 4px;
+        border-left: 3px solid #3498db;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .class-item:hover {
+        transform: translateX(2px);
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+    }
+
+    .class-name {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 2px;
+        line-height: 1.2;
+    }
+
+    .class-time {
+        font-size: 0.6rem;
+        color: #7f8c8d;
+        font-weight: 500;
+        margin-bottom: 3px;
+    }
+
+    .class-type {
+        display: inline-block;
+        padding: 2px 4px;
+        border-radius: 6px;
+        font-size: 0.5rem;
+        font-weight: 600;
+        margin-right: 3px;
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+    }
+
+    .type-vr { background: #e74c3c; color: white; }
+    .type-lab { background: #27ae60; color: white; }
+    .type-lec { background: #f39c12; color: white; }
+    .type-room { background: #9b59b6; color: white; }
+
+    .monday .class-item { border-left-color: #e74c3c; }
+    .tuesday .class-item { border-left-color: #27ae60; }
+    .wednesday .class-item { border-left-color: #f39c12; }
+    .thursday .class-item { border-left-color: #9b59b6; }
+    .friday .class-item { border-left-color: #3498db; }
+    .saturday .class-item { border-left-color: #e67e22; }
+
+    .monday .day-header { color: #e74c3c; border-bottom-color: #e74c3c; }
+    .tuesday .day-header { color: #27ae60; border-bottom-color: #27ae60; }
+    .wednesday .day-header { color: #f39c12; border-bottom-color: #f39c12; }
+    .thursday .day-header { color: #9b59b6; border-bottom-color: #9b59b6; }
+    .friday .day-header { color: #3498db; border-bottom-color: #3498db; }
+    .saturday .day-header { color: #e67e22; border-bottom-color: #e67e22; }
+
+    .empty-day {
+        text-align: center;
+        color: #95a5a6;
+        font-style: italic;
+        font-size: 0.7rem;
+        padding: 15px 8px;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .stats {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 6px 12px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        min-width: 50px;
+    }
+
+    .stat-number {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2c3e50;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.55rem;
+        color: #7f8c8d;
+        font-weight: 500;
+        margin-top: 2px;
+    }
+
+    /* Mobile specific styles */
+    @media (max-width: 768px) {
+        body {
+            padding: 4px;
+        }
+        
+        .container {
+            padding: 6px;
+        }
+        
+        .header h1 {
+            font-size: 1.2rem;
+        }
+        
+        .header p {
+            font-size: 0.6rem;
+        }
+        
+        .schedule-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px;
+        }
+        
+        .day-header {
+            font-size: 0.7rem;
+        }
+        
+        .class-name {
+            font-size: 0.55rem;
+        }
+        
+        .class-time {
+            font-size: 0.45rem;
+        }
+        
+        .class-type {
+            font-size: 0.4rem;
+            padding: 1px 2px;
+        }
+        
+        .stats {
+            gap: 6px;
+        }
+        
+        .stat-card {
+            padding: 3px 6px;
+            min-width: 35px;
+        }
+        
+        .stat-number {
+            font-size: 0.8rem;
+        }
+        
+        .stat-label {
+            font-size: 0.45rem;
+        }
+    }
+
+    /* Extra small screens */
+    @media (max-width: 480px) {
+        .schedule-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .header h1 {
+            font-size: 1rem;
+        }
+        
+        .day-card {
+            padding: 4px;
+        }
+        
+        .class-item {
+            padding: 3px 4px;
+        }
+    }
+</style>
+</body>
+</html>
+<style>
+    .class-controls {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 4px;
+        gap: 4px;
+    }
+
+    .cancel-btn {
+        background: #ff4757;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 0.6rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 2px 4px rgba(255, 71, 87, 0.2);
+    }
+
+    .cancel-btn::before {
+        content: '×';
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    .cancel-btn:hover {
+        background: #ff6b81;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(255, 71, 87, 0.3);
+    }
+
+    .cancel-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(255, 71, 87, 0.2);
+    }
+
+    .class-item.cancelled .cancel-btn {
+        background: #2ecc71;
+    }
+
+    .class-item.cancelled .cancel-btn::before {
+        content: '✓';
+    }
+
+    .class-item.cancelled .cancel-btn:hover {
+        background: #27ae60;
+        box-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
+    }
+
+    .class-item.cancelled {
+        opacity: 0.7;
+        background: #f1f2f6;
+        border-left-color: #a4b0be;
+    }
+
+    .class-item.cancelled::after {
+        content: 'CANCELLED';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-15deg);
+        font-size: 0.9rem;
+        color: #ff4757;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+        pointer-events: none;
+        opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+        .cancel-btn {
+            padding: 2px 8px;
+            font-size: 0.5rem;
+        }
+
+        .class-item.cancelled::after {
+            font-size: 0.7rem;
+        }
+    }
+
+    .class-item {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 6px;
+        padding: 6px 8px;
+        margin-bottom: 4px;
+        border-left: 3px solid #3498db;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .class-item:hover {
+        transform: translateX(2px);
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+    }
+
+    .class-name {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 2px;
+        line-height: 1.2;
+    }
+
+    .class-time {
+        font-size: 0.6rem;
+        color: #7f8c8d;
+        font-weight: 500;
+        margin-bottom: 3px;
+    }
+
+    .class-type {
+        display: inline-block;
+        padding: 2px 4px;
+        border-radius: 6px;
+        font-size: 0.5rem;
+        font-weight: 600;
+        margin-right: 3px;
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+    }
+
+    .type-vr { background: #e74c3c; color: white; }
+    .type-lab { background: #27ae60; color: white; }
