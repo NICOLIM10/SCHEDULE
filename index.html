@@ -5,35 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weekly Schedule</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 8px;
+        margin: 0;
+        box-sizing: border-box;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: max(8px, 2vw);
-            margin: 0;
-            box-sizing: border-box;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            height: calc(100vh - max(16px, 4vw));
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            gap: max(8px, 1.5vw);
-        }
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        min-height: calc(100vh - 16px);
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
 
         .header {
             text-align: center;
@@ -54,26 +49,22 @@
             font-weight: 300;
         }
 
-        .schedule-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
-            gap: max(8px, 1.5vw);
-            flex: 1;
-            overflow: hidden;
-        }
+    .schedule-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 12px;
+        padding: 4px;
+    }
 
-        .day-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 8px;
-            padding: max(8px, 1.5vw);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            min-height: clamp(150px, 30vh, 300px);
-        }
+    .day-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 8px;
+        padding: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
 
         .day-card:hover {
             transform: scale(1.02);
@@ -214,82 +205,70 @@
             margin-top: 2px;
         }
 
-        /* Mobile specific styles */
-        @media (max-width: 768px) {
-            body {
-                padding: 4px;
-            }
-            
-            .container {
-                padding: 6px;
-            }
-            
-            .header h1 {
-                font-size: 1.2rem;
-            }
-            
-            .header p {
-                font-size: 0.6rem;
-            }
-            
-            .schedule-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 4px;
-            }
-            
-            .day-header {
-                font-size: 0.7rem;
-            }
-            
-            .class-name {
-                font-size: 0.55rem;
-            }
-            
-            .class-time {
-                font-size: 0.45rem;
-            }
-            
-            .class-type {
-                font-size: 0.4rem;
-                padding: 1px 2px;
-            }
-            
-            .stats {
-                gap: 6px;
-            }
-            
-            .stat-card {
-                padding: 3px 6px;
-                min-width: 35px;
-            }
-            
-            .stat-number {
-                font-size: 0.8rem;
-            }
-            
-            .stat-label {
-                font-size: 0.45rem;
-            }
+    /* Mobile Specific Styles */
+    @media (max-width: 768px) {
+        body {
+            padding: 4px;
         }
 
-        /* Extra small screens */
-        @media (max-width: 480px) {
-            .schedule-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .header h1 {
-                font-size: 1rem;
-            }
-            
-            .day-card {
-                padding: 4px;
-            }
-            
-            .class-item {
-                padding: 3px 4px;
-            }
+        .container {
+            min-height: unset;
+            height: auto;
+            padding: 8px;
         }
+
+        .schedule-grid {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .day-card {
+            padding: 8px;
+        }
+
+        .class-item {
+            padding: 8px;
+            touch-action: pan-y; /* Enable smooth touch scrolling */
+        }
+
+        .class-name {
+            font-size: 0.85rem;
+        }
+
+        .class-time {
+            font-size: 0.75rem;
+        }
+
+        .class-type {
+            font-size: 0.65rem;
+            padding: 2px 6px;
+        }
+
+        .cancel-btn {
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            min-height: 30px; /* Better touch target */
+        }
+    }
+
+    /* Small phones */
+    @media (max-width: 360px) {
+        .container {
+            padding: 6px;
+        }
+
+        .day-card {
+            padding: 6px;
+        }
+
+        .class-name {
+            font-size: 0.8rem;
+        }
+
+        .class-time {
+            font-size: 0.7rem;
+        }
+    }
     </style>
 </head>
 <body>
